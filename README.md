@@ -3,209 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Chấm Điểm Phát Âm Anh-Mỹ</title>
+    <title>App Luyện Phát Âm Mỹ</title>
     <style>
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            font-family: Arial, sans-serif;
+            background-color: #eef2f3;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
         }
-        .container {
-            background: white;
+        .app-card {
+            background: #ffffff;
             padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             text-align: center;
-            max-width: 450px;
             width: 100%;
+            max-width: 400px;
         }
-        h1 { color: #333; font-size: 24px; margin-bottom: 20px; }
-        .word-box {
-            font-size: 32px;
-            font-weight: bold;
-            color: #1a73e8;
-            margin-bottom: 5px;
-        }
-        .ipa-box {
-            font-size: 18px;
-            color: #5f6368;
-            margin-bottom: 5px;
-            font-style: italic;
-        }
-        .meaning-box {
-            font-size: 16px;
-            color: #202124;
-            margin-bottom: 25px;
-            font-weight: 500;
-        }
+        h2 { color: #2c3e50; margin-top: 0; font-size: 22px; }
+        .word { font-size: 34px; font-weight: bold; color: #2980b9; margin: 10px 0; }
+        .ipa { font-size: 18px; color: #7f8c8d; font-style: italic; margin-bottom: 5px; }
+        .meaning { font-size: 16px; color: #27ae60; font-weight: bold; margin-bottom: 25px; }
+        
         .btn {
-            background-color: #1a73e8;
-            color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 28px;
             font-size: 16px;
-            border-radius: 24px;
+            border-radius: 30px;
             cursor: pointer;
-            transition: 0.3s;
             font-weight: bold;
+            transition: 0.2s;
+            width: 80%;
+            margin: 5px 0;
         }
-        .btn:hover { background-color: #1557b0; }
-        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
-        .btn-next { background-color: #34a853; margin-top: 15px;}
-        .btn-next:hover { background-color: #2b8a43; }
-        .result-container { margin-top: 25px; min-height: 100px; }
-        .status { font-weight: bold; color: #5f6368; margin-bottom: 10px; }
-        .score { font-size: 40px; font-weight: bold; margin: 10px 0; }
-        .user-text { color: #5f6368; font-style: italic; }
-        .success { color: #2b8a43; }
-        .warning { color: #e37400; }
-        .danger { color: #c5221f; }
+        #btn-speak { background-color: #e74c3c; color: white; }
+        #btn-speak:hover { background-color: #c0392b; }
+        #btn-speak:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        
+        #btn-next { background-color: #3498db; color: white; display: none; margin-top: 10px; }
+        #btn-next:hover { background-color: #2980b9; }
+
+        .result-box { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; min-height: 120px; }
+        .status { color: #7f8c8d; font-size: 14px; margin-bottom: 8px; }
+        .score { font-size: 45px; font-weight: bold; margin: 5px 0; }
+        .you-said { color: #34495e; font-style: italic; font-size: 15px; }
+        
+        /* Màu sắc điểm số */
+        .good { color: #27ae60; }
+        .normal { color: #f39c12; }
+        .bad { color: #c0392b; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Phát Âm Chuẩn Mỹ (AI)</h1>
+<div class="app-card">
+    <h2>Luyện Phát Âm Chuẩn Mỹ</h2>
     
-    <div class="word-box" id="target-word">Loading...</div>
-    <div class="ipa-box" id="ipa-word">/.../</div>
-    <div class="meaning-box" id="meaning-word">Nghĩa của từ</div>
+    <div class="word" id="lbl-word">Loading...</div>
+    <div class="ipa" id="lbl-ipa">/.../</div>
+    <div class="meaning" id="lbl-meaning">Nghĩa của từ</div>
 
-    <button class="btn" id="btn-speak">🎤 Bấm để Nói</button>
-    <br>
-    <button class="btn btn-next" id="btn-next" style="display:none;">Từ tiếp theo ➔</button>
+    <button class="btn" id="btn-speak">🎤 Bấm và Đọc</button>
+    <button class="btn" id="btn-next">Từ tiếp theo ➔</button>
 
-    <div class="result-container">
-        <div class="status" id="status">Sẵn sàng! Hãy bấm nút và đọc từ phía trên.</div>
-        <div class="score" id="score"></div>
-        <div class="user-text" id="user-text"></div>
+    <div class="result-box">
+        <div class="status" id="lbl-status">Đang tải danh sách từ...</div>
+        <div class="score" id="lbl-score"></div>
+        <div class="you-said" id="lbl-said"></div>
     </div>
 </div>
 
 <script>
-    // Danh sách 10 từ vựng của bạn
-    const wordList = [
-        { word: "Physical", ipa: "/ˈfɪzɪkl/", meaning: "Về mặt thể chất (adj)" },
-        { word: "Admit", ipa: "/ədˈmɪt/", meaning: "Thú nhận, thừa nhận (verb)" },
-        { word: "Campaign", ipa: "/kæmˈpeɪn/", meaning: "Chiến dịch (noun)" },
-        { word: "Bully", ipa: "/ˈbʊli/", meaning: "Bắt nạt (verb)" },
-        { word: "Crime", ipa: "/kraɪm/", meaning: "Tội phạm / Hành vi phạm tội (noun)" },
-        { word: "Alcohol", ipa: "/ˈælkəhɔːl/", meaning: "Đồ uống có cồn - rượu, bia (noun)" },
-        { word: "Depression", ipa: "/dɪˈpreʃn/", meaning: "Sự/Tình trạng trầm cảm (noun)" },
-        { word: "Self-confidence", ipa: "/self ˈkɑːnfɪdəns/", meaning: "Sự tự tin vào bản thân (noun)" },
-        { word: "Poverty", ipa: "/ˈpɑːvərti/", meaning: "Sự nghèo đói (noun)" },
-        { word: "Make fun of", ipa: "/meɪk fʌn əv/", meaning: "Trêu chọc, chế giễu (phrase)" }
+    // Dữ liệu 10 từ của bạn đã chuẩn hóa phiên âm Mỹ
+    const dataset = [
+        { w: "Physical", i: "/ˈfɪzɪkl/", m: "Về mặt thể chất" },
+        { w: "Admit", i: "/ədˈmɪt/", m: "Thú nhận, thừa nhận" },
+        { w: "Campaign", i: "/kæmˈpeɪn/", m: "Chiến dịch" },
+        { w: "Bully", i: "/ˈbʊli/", m: "Bắt nạt" },
+        { w: "Crime", i: "/kraɪm/", m: "Tội phạm / Hành vi phạm tội" },
+        { w: "Alcohol", i: "/ˈælkəhɔːl/", m: "Đồ uống có cồn (rượu, bia)" },
+        { w: "Depression", i: "/dɪˈpreʃn/", m: "Sự/Tình trạng trầm cảm" },
+        { w: "Self-confidence", i: "/self ˈkɑːnfɪdəns/", m: "Sự tự tin vào bản thân" },
+        { w: "Poverty", i: "/ˈpɑːvərti/", m: "Sự nghèo đói" },
+        { w: "Make fun of", i: "/meɪk fʌn əv/", m: "Trêu chọc, chế giễu" }
     ];
 
-    let currentIndex = 0;
+    let index = 0;
 
-    // Khởi tạo Google Web Speech API
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        alert("Trình duyệt của bạn không hỗ trợ Web Speech API. Hãy dùng Google Chrome hoặc Edge nhé!");
+    // Kiểm tra tính năng nhận diện giọng nói của trình duyệt
+    const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechAPI) {
+        alert("LỖI: Trình duyệt này không hỗ trợ nhận diện giọng nói. Hãy dùng Google Chrome!");
     }
-    
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US'; 
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
 
-    // DOM Elements
-    const targetWordEl = document.getElementById('target-word');
-    const ipaWordEl = document.getElementById('ipa-word');
-    const meaningWordEl = document.getElementById('meaning-word');
+    const recognizer = new SpeechAPI();
+    recognizer.lang = 'en-US'; // Ép cấu hình giọng Anh - Mỹ
+    recognizer.interimResults = false;
+
+    // Lấy các thẻ HTML
+    const lblWord = document.getElementById('lbl-word');
+    const lblIpa = document.getElementById('lbl-ipa');
+    const lblMeaning = document.getElementById('lbl-meaning');
     const btnSpeak = document.getElementById('btn-speak');
     const btnNext = document.getElementById('btn-next');
-    const statusEl = document.getElementById('status');
-    const scoreEl = document.getElementById('score');
-    const userTextEl = document.getElementById('user-text');
+    const lblStatus = document.getElementById('lbl-status');
+    const lblScore = document.getElementById('lbl-score');
+    const lblSaid = document.getElementById('lbl-said');
 
-    // Hiển thị từ hiện tại
-    function loadWord() {
-        targetWordEl.textContent = wordList[currentIndex].word;
-        ipaWordEl.textContent = wordList[currentIndex].ipa;
-        meaningWordEl.textContent = wordList[currentIndex].meaning;
-        scoreEl.textContent = "";
-        userTextEl.textContent = "";
-        statusEl.textContent = "Sẵn sàng! Hãy bấm nút và đọc.";
+    // Hàm hiển thị từ vựng lên màn hình
+    function showWord() {
+        lblWord.textContent = dataset[index].w;
+        lblIpa.textContent = dataset[index].i;
+        lblMeaning.textContent = dataset[index].m;
+        
+        lblScore.textContent = "";
+        lblSaid.textContent = "";
+        lblStatus.textContent = "Nhấn nút màu đỏ, đợi hiện chữ 'Hãy nói đi' rồi đọc nhé.";
         btnNext.style.display = "none";
         btnSpeak.disabled = false;
     }
 
-    // Sự kiện khi bấm nút nói
+    // Sự kiện bấm nút Nói
     btnSpeak.addEventListener('click', () => {
-        recognition.start();
-        statusEl.textContent = "🔊 Đang lắng nghe... Hãy nói to, rõ ràng.";
-        btnSpeak.disabled = true;
+        try {
+            recognizer.start();
+            lblStatus.textContent = "🎙️ Hãy nói đi... Máy đang lắng nghe bạn";
+            btnSpeak.disabled = true;
+        } catch (e) {
+            lblStatus.textContent = "Có lỗi xảy ra, vui lòng thử lại.";
+            btnSpeak.disabled = false;
+        }
     });
 
-    // Xử lý khi có kết quả trả về từ Google API
-    recognition.onresult = (event) => {
-        // Chuẩn hóa chuỗi (bỏ dấu chấm câu nếu có) để so sánh chính xác hơn
-        const userSpeech = event.results[0][0].transcript.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim();
-        const targetWord = wordList[currentIndex].word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim();
+    // Khi máy thu âm xong và trả về kết quả text
+    recognizer.onresult = (event) => {
+        // Lấy từ người dùng nói, viết thường, xóa dấu chấm câu thừa
+        const userText = event.results[0][0].transcript.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim();
+        const targetText = dataset[index].w.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim();
 
-        userTextEl.textContent = `Bạn đã nói: "${event.results[0][0].transcript}"`;
-        
-        // Tính điểm
-        const matchPercent = calculateSimilarity(userSpeech, targetWord);
-        
-        scoreEl.textContent = `${matchPercent}%`;
-        if (matchPercent >= 85) {
-            scoreEl.className = "score success";
-            statusEl.textContent = "Tuyệt vời! Phát âm chuẩn Mỹ rồi đấy!";
-        } else if (matchPercent >= 60) {
-            scoreEl.className = "score warning";
-            statusEl.textContent = "Khá tốt, nhưng cần chính xác hơn.";
+        lblSaid.textContent = `Máy nghe được bạn nói: "${event.results[0][0].transcript}"`;
+
+        // Tính điểm phần trăm trùng khớp
+        const score = matchScore(userText, targetText);
+        lblScore.textContent = score + "%";
+
+        // Đổi màu theo mức điểm
+        if (score >= 80) {
+            lblScore.className = "score good";
+            lblStatus.textContent = "🌟 Tuyệt vời! Bạn phát âm rất chuẩn.";
+        } else if (score >= 50) {
+            lblScore.className = "score normal";
+            lblStatus.textContent = "👍 Khá tốt! Cố gắng nghe lại phiên âm để chuẩn hơn.";
         } else {
-            scoreEl.className = "score danger";
-            statusEl.textContent = "Chưa chính xác. Hãy thử lại xem.";
+            lblScore.className = "score bad";
+            lblStatus.textContent = "❌ Sai rồi! Hãy bấm nói lại hoặc chuyển từ tiếp theo.";
         }
 
         btnSpeak.disabled = false;
         btnNext.style.display = "inline-block";
     };
 
-    recognition.onerror = (event) => {
-        statusEl.textContent = "Lỗi: Không nhận diện được giọng nói. Hãy thử lại.";
+    // Xử lý nếu thu âm bị lỗi (Ví dụ: bấm nút nhưng im lặng không nói gì)
+    recognizer.onerror = () => {
+        lblStatus.textContent = "⚠️ Máy không nghe thấy bạn nói gì. Vui lòng bấm làm lại.";
         btnSpeak.disabled = false;
     };
 
-    recognition.onspeechend = () => {
-        recognition.stop();
+    recognizer.onspeechend = () => {
+        recognizer.stop();
     };
 
+    // Nút chuyển từ tiếp theo
     btnNext.addEventListener('click', () => {
-        currentIndex = (currentIndex + 1) % wordList.length;
-        loadWord();
+        index = (index + 1) % dataset.length;
+        showWord();
     });
 
-    // Thuật toán Levenshtein Distance
-    function calculateSimilarity(str1, str2) {
-        if(str1 === str2) return 100;
-        const track = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
-        for (let i = 0; i <= str1.length; i += 1) track[0][i] = i;
-        for (let j = 0; j <= str2.length; j += 1) track[j][0] = j;
-        for (let j = 1; j <= str2.length; j += 1) {
-            for (let i = 1; i <= str1.length; i += 1) {
-                const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
-                track[j][i] = Math.min(
-                    track[j][i - 1] + 1,
-                    track[j - 1][i] + 1,
-                    track[j - 1][i - 1] + indicator
-                );
+    // Thuật toán so sánh độ chính xác giữa văn bản bạn nói và từ gốc
+    function matchScore(s1, s2) {
+        if (s1 === s2) return 100;
+        let longer = s1.length > s2.length ? s1 : s2;
+        let shorter = s1.length > s2.length ? s2 : s1;
+        let longerLength = longer.length;
+        if (longerLength === 0) return 100;
+        
+        // Tính khoảng cách Levenshtein
+        let costs = new Array();
+        for (let i = 0; i <= s1.length; i++) {
+            let lastValue = i;
+            for (let j = 0; j <= s2.length; j++) {
+                if (i == 0) costs[j] = j;
+                else {
+                    if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) != s2.charAt(j - 1))
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
             }
+            if (i > 0) costs[s2.length] = lastValue;
         }
-        const distance = track[str2.length][str1.length];
-        const maxLength = Math.max(str1.length, str2.length);
-        return Math.round(((maxLength - distance) / maxLength) * 100);
+        return Math.round(((longerLength - costs[s2.length]) / longerLength) * 100);
     }
 
-    loadWord();
+    // Chạy ứng dụng khi vừa mở trang lên
+    showWord();
 </script>
 
 </body>
